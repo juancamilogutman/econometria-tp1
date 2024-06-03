@@ -1,0 +1,77 @@
+---
+title: "1er Trabajo Práctico de Econometría"
+subtitle: "Análisis Exploratorio"
+author: "Mauro Ciani y Juan Camilo Gutman"
+lang: es
+editor: visual
+format:
+  pdf:
+---
+
+## La idea es presentar un mínimo análisis exploratorio acá...
+
+```{r}
+#| include: false
+
+library(tidyverse)    #Para manejar bases de datos
+library(ggplot2)      #Para graficar
+library(modelsummary) #Mejores tablas de regresión 
+library(tinytable)    #Motor de creación de tablas
+
+options(tinytable_tt_digits = 3)
+options(tinytable_theme_placement_latex_float = "H")
+
+df1 <- read.RDS("Bases/eph_1abc")
+# df2 <- read.RDS("Bases/eph_1de")
+# df3 <- read.RDS("Bases/eph_2ab")
+```
+
+```{r}
+unique_estado <- unique(df1$ESTADO)
+unique_nivel_ed <- unique(df1$NIVEL_ED)
+
+unique_df1 <- data.frame(
+  ESTADO = unique_estado,
+  NIVEL_ED = unique_nivel_ed
+)
+
+# Assuming your dataframe is called 'df1'
+# Assuming your dataframe is called 'df1'
+unique_estado <- unique(df1$CH07)
+unique_nivel_ed <- unique(df1$NIVEL_ED)
+
+# Determine the maximum number of unique values
+max_unique_values <- max(length(unique_estado), length(unique_nivel_ed))
+
+# Pad the shorter vector with NA to match the length
+if (length(unique_estado) < max_unique_values) {
+  unique_estado <- c(unique_estado, rep(NA, max_unique_values - length(unique_estado)))
+}
+if (length(unique_nivel_ed) < max_unique_values) {
+  unique_nivel_ed <- c(unique_nivel_ed, rep(NA, max_unique_values - length(unique_nivel_ed)))
+}
+
+# Create the data frame
+unique_df1 <- data.frame(
+  CH07 = unique_estado,
+  NIVEL_ED = unique_nivel_ed
+)
+
+tt(unique_df1) %>% 
+  format_tt(replace = "")
+```
+
+```{r}
+# library(plotly)
+# 
+# # Create a histogram for the CH12 column
+# fig <- plot_ly(df1, x = ~CH12, type = "histogram", histnorm = "probability",
+#                marker = list(color = "#1f77b4"), opacity = 0.7) %>%
+#        layout(title = "Distribution of Years of Education (CH12)",
+#               xaxis = list(title = "Years of Education"),
+#               yaxis = list(title = "Probability"))
+# 
+# # Show the plot
+# fig
+
+```

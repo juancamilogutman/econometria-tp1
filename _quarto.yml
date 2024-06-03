@@ -1,0 +1,17 @@
+project:
+  title: "econometria-tp1"
+  output-dir: docs  
+
+format:
+  pdf:
+    toc: true
+    toc-depth: 3
+    toc-location: left
+    number-sections: true
+    mainfont: Latin Modern Roman
+    sansfont: Latin Modern Roman
+    
+bibliography: biblio.bib
+csl: apa7.csl
+
+editor: visual

@@ -1,0 +1,67 @@
+---
+title: "1er Trabajo Práctico de Econometría"
+author:
+  - name: Mauro Ciani
+  - name: Juan Camilo Gutman
+
+abstract: > 
+  El presente trabajo se propuso blabla
+---
+
+## Librerías
+
+```{r}
+#| output: false
+
+library(tidyverse)    #Para manejar bases de datos
+library(ggplot2)      #Para graficar
+library(modelsummary) #Mejores tablas de regresión 
+library(tinytable)    #Motor de creación de tablas
+```
+
+```{r}
+#| include: false
+
+options(tinytable_tt_digits = 3)
+options(tinytable_theme_placement_latex_float = "H")
+```
+
+```{r}
+df1 <- readRDS("bases/eph_1abc.RDS")
+# df2 <- readRDS("Bases/eph_1de.RDS")
+
+```
+
+Nos quedamos únicamente con los jefes de hogar, hombres, con edades entre 25 y 65 años, ocupados y asalariados. Habría que mencionar algo sobre la base resultante (y cuantos datos estamos descartando) y un mínimo análisis exploratorio.
+
+## Probando referencias
+
+[@pradier2023] [@arel-bundock2022]
+
+Cras a molestie nulla. [@Hemingway1952]
+
+[@pradier2023]
+
+En la tabla pueden leerse los resultados de la primer regresión.
+
+```{r}
+#| echo: false
+
+reg1 <- lm(logSal ~ edad + NIVEL_ED + est_civ + AGLOMERADO, data = df1)
+
+reg2 <- lm(logSal ~ edad + NIVEL_ED + est_civ + REGION, data = df1)
+
+sum <- modelsummary(list("Por Aglomerado" = reg1,
+                         "Por Región" = reg2
+                         ),
+                    width = 0.8,
+                    cap = "1er regresión",
+                    )
+
+# sum %>%
+#   theme_tt("multipage", rowhead = 1) 
+```
+
+texto de prueba
+
+# Bibliografía
