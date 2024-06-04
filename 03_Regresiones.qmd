@@ -61,13 +61,23 @@ regs <- list("Sin edad^2" = reg1,
              "Con edad^2" = reg2
              )
 
-resultados_1 <- modelsummary(regs,
+#coefmap
+cm1y2 <- c("(Intercept)"="Constante",
+        "Num.Obs." = "n")
+
+notas1y2 <- c("Notes: Aca irían nuestras notas. Comentarios, explicaciones. Elegancia.")
+
+epigrafe1y2 <- 'Tabla 1 — Resultados de las regresiones, Ecuación de Mincer
+(estimación del efecto de la educación en el logaritmo de los salarios, controlando por...)'
+
+rdos_regs1y2 <- modelsummary(regs,
                            escape = TRUE,
                            shape = term ~ model + statistic,
                            cap = "1eras regresiones",
                            #width = 0.8,
                            # estimate = "estimate",
                            coef_rename = coef_rename,
+                           #coef_map = cm,
                            estimate="{estimate}{stars}",
                            statistic = c("p.value",
                                          "conf.low",
@@ -77,8 +87,11 @@ resultados_1 <- modelsummary(regs,
                                      '**' = .05,
                                      '***'=0.01
                                      ),
+                           notes = notas1y2,
+                           title = epigrafe1y2
                            )
-resultados_1 %>%
+
+rdos_regs1y2 %>%
   theme_tt("multipage",
            rowhead = 1
            ) %>%
@@ -86,6 +99,49 @@ resultados_1 %>%
                     "Estado Civil" = 9,
                     "Aglomerado" = 13,
                     "Región" = 44
+                    ),
+           )
+```
+
+```{r}
+
+#coefmap
+cm2 <- c("(Intercept)"="Constante",
+        "Num.Obs." = "n")
+#Notas
+notas2 <- c("Notes: Aca irían nuestras notas. Comentarios, explicaciones. Elegancia.")
+#falta nota sobre estrellas####
+
+epigrafe2 <- 'Tabla 2 — Resultados de la regresión, Ecuación de Mincer
+(estimación del efecto de la educación en el logaritmo de los salarios, controlando por...)'
+rdo_reg2 <- modelsummary(reg2,
+                           escape = TRUE,
+                           shape = term ~ model + statistic,
+                           cap = "1eras regresión",
+                           #width = 0.8,
+                           # estimate = "estimate",
+                           coef_rename = coef_rename,
+                           #coef_map = cm,
+                           estimate="{estimate}{stars}",
+                           statistic = c("p.value",
+                                         "conf.low",
+                                         "conf.high"
+                                         ),
+                           stars = c('*' = .1,
+                                     '**' = .05,
+                                     '***'=0.01
+                                     ),
+                           notes = notas2,
+                           title = epigrafe2
+                           )
+rdo_reg2 %>%
+  theme_tt("multipage",
+           rowhead = 1
+           ) %>%
+  group_tt(i = list("Nivel Educativo" = 3,
+                    "Estado Civil" = 9,
+                    "Región" = 13,
+                    "Bondad de Ajuste" = 18
                     ),
            )
 ```
