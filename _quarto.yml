@@ -10,6 +10,9 @@ format:
     number-sections: true
     mainfont: Latin Modern Roman
     sansfont: Latin Modern Roman
+    include-in-header: 
+      text: |
+        \usepackage{typearea}
     
 bibliography: biblio.bib
 csl: apa7.csl

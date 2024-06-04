@@ -11,16 +11,19 @@ eph1 <- readRDS("Bases/eph_1abc.RDS")
 #De la limpieza ya trajimos las variables categóricas como factores
 reg1 <- lm(logSal ~ NIVEL_ED + edad +  est_civ + REGION, data = eph1)
 reg2 <- lm(logSal ~ NIVEL_ED + edad + I(edad^2) +  est_civ + REGION, data = eph1)
+regs <- list("Sin edad^2" = reg1, "Con edad^2" = reg2)
 
-resultados <- modelsummary(list("Sin edad^2" = reg1,
-                                "Con edad^2" = reg2
-                                ),
-                           cap = "1er regresión",
+resultados <- modelsummary(regs,
+                           escape = TRUE,
+                           shape = term ~ model + statistic,
+                           #cap = "1er regresión",
                            estimate="{estimate}{stars}",
+                           statistic = c("p.value", "conf.low", "conf.high"),
                            stars = c('*' = .1,
                                      '**' = .05,
                                      '***'=0.01
-                                     )
+                                     ),
+
                            )
 resultados
 

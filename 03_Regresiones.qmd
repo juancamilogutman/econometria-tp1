@@ -29,7 +29,6 @@ options(tinytable_theme_placement_latex_float = "H")
 ```{r}
 df1 <- readRDS("bases/eph_1abc.RDS")
 # df2 <- readRDS("Bases/eph_1de.RDS")
-
 ```
 
 Nos quedamos únicamente con los jefes de hogar, hombres, con edades entre 25 y 65 años, ocupados y asalariados. Habría que mencionar algo sobre la base resultante (y cuantos datos estamos descartando) y un mínimo análisis exploratorio.
@@ -44,23 +43,47 @@ Cras a molestie nulla. [@Hemingway1952]
 
 En la tabla pueden leerse los resultados de la primer regresión.
 
+\newpage
+\KOMAoptions{paper=landscape,pagesize}
+\recalctypearea
+
 ```{r}
 #| echo: false
 
-reg1 <- lm(logSal ~ edad + NIVEL_ED + est_civ + AGLOMERADO, data = df1)
+reg1 <- lm(logSal ~ edad + NIVEL_ED + est_civ + AGLOMERADO,
+           data = df1
+           )
+reg2 <- lm(logSal ~ edad + NIVEL_ED + est_civ + REGION,
+           data = df1
+           )
+regs <- list("Sin edad^2" = reg1,
+             "Con edad^2" = reg2
+             )
 
-reg2 <- lm(logSal ~ edad + NIVEL_ED + est_civ + REGION, data = df1)
+resultados_1 <- modelsummary(regs,
+                           escape = TRUE,
+                           shape = term ~ model + statistic,
+                           #cap = "1er regresión",
+                           #width = 0.8,
+                           estimate = "estimate",
+                           #estimate="{estimate}{stars}",
+                           statistic = c("p.value",
+                                         "conf.low",
+                                         "conf.high"
+                                         ),
+                           stars = c('*' = .1,
+                                     '**' = .05,
+                                     '***'=0.01
+                                     ),
 
-sum <- modelsummary(list("Por Aglomerado" = reg1,
-                         "Por Región" = reg2
-                         ),
-                    width = 0.8,
-                    cap = "1er regresión",
-                    )
-
-# sum %>%
-#   theme_tt("multipage", rowhead = 1) 
+                           )
+resultados_1 %>%
+  theme_tt("multipage", rowhead = 1)
 ```
+
+\newpage
+\KOMAoptions{paper=portrait,pagesize}
+\recalctypearea
 
 texto de prueba
 
