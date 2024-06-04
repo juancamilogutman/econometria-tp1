@@ -16,5 +16,5 @@ format:
     
 bibliography: biblio.bib
 csl: apa7.csl
-
+lang: es
 editor: visual

@@ -43,17 +43,18 @@ Cras a molestie nulla. [@Hemingway1952]
 
 En la tabla pueden leerse los resultados de la primer regresión.
 
+```{=tex}
 \newpage
 \KOMAoptions{paper=landscape,pagesize}
 \recalctypearea
-
+```
 ```{r}
 #| echo: false
 
-reg1 <- lm(logSal ~ edad + NIVEL_ED + est_civ + AGLOMERADO,
+reg1 <- lm(logSal ~ edad + factor(NIVEL_ED) + factor(est_civ) + factor(AGLOMERADO),
            data = df1
            )
-reg2 <- lm(logSal ~ edad + NIVEL_ED + est_civ + REGION,
+reg2 <- lm(logSal ~ edad + factor(NIVEL_ED) + factor(est_civ) + factor(REGION),
            data = df1
            )
 regs <- list("Sin edad^2" = reg1,
@@ -63,10 +64,11 @@ regs <- list("Sin edad^2" = reg1,
 resultados_1 <- modelsummary(regs,
                            escape = TRUE,
                            shape = term ~ model + statistic,
-                           #cap = "1er regresión",
+                           cap = "1eras regresiones",
                            #width = 0.8,
-                           estimate = "estimate",
-                           #estimate="{estimate}{stars}",
+                           # estimate = "estimate",
+                           coef_rename = coef_rename,
+                           estimate="{estimate}{stars}",
                            statistic = c("p.value",
                                          "conf.low",
                                          "conf.high"
@@ -75,16 +77,24 @@ resultados_1 <- modelsummary(regs,
                                      '**' = .05,
                                      '***'=0.01
                                      ),
-
                            )
 resultados_1 %>%
-  theme_tt("multipage", rowhead = 1)
+  theme_tt("multipage",
+           rowhead = 1
+           ) %>%
+  group_tt(i = list("Nivel Educativo" = 3,
+                    "Estado Civil" = 9,
+                    "Aglomerado" = 13,
+                    "Región" = 44
+                    ),
+           )
 ```
 
+```{=tex}
 \newpage
 \KOMAoptions{paper=portrait,pagesize}
 \recalctypearea
-
+```
 texto de prueba
 
 # Bibliografía
