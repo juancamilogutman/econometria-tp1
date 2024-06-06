@@ -4,68 +4,81 @@ rm(list=ls()) #Limpiamos la memoria
 
 ##Librerías####
 library(tidyverse)    #Para manejar bases de datos.
-library(eph)          #Librería hecha por científicxs argentinxs: una caja de 
-                      #herramentas para manejar la EPH.
+library(eph)          #Librería hecha por científicxs argentinxs. 
 
 ##Descarga de base####
-df <- get_microdata(year = 2023,
+df <- get_microdata(year = 2023, #del paquete EPH
                     trimester = 4,
                     type = 'individual'
-                    ) %>% 
-      organize_labels(type='individual') 
+                    ) 
 
-##Transformaciones y filtros####
+## Transformaciones y filtros ####
 
-### Transformaciones de tipo de variable
+### Transformaciones de tipo de variable ####
 df <- df %>% mutate_at(vars(NIVEL_ED,
                             AGLOMERADO,
-                            CH07,
+                            CH07, #estado civil
                             ESTADO,
                             REGION
                             ),
                        ~as.factor(.)
                        )
 
-## Generación de la variable de años de educación
-## ESTO TODAVÍA NO FUNCIONA
-df <- df %>%
-  mutate(CH14 = case_when(
-    CH13 != 1 & CH13 != 2 ~ 0
-          )
-        ) %>%
-  mutate(ult_anio = as.numeric(CH14))
+### Generación de la variable de años de educación ####
+df <- df %>% 
+  mutate(CH14bis = replace_na(CH14, 0)) %>% 
+  mutate(CH14bis = replace(CH14, CH14 == "", 0))
+
+df <- df %>% 
+  mutate(ult_anio = as.numeric(CH14bis)) %>%
+  filter(ult_anio != 98, #¬Educación especial
+         ult_anio != 99) #¬Ns/Nr
+
+# df$ult_anio <- remove_var_label(df$ult_anio)
 
 df <- df %>%
-  mutate(educ = case_when(
-    CH12 == 2 & NIVEL_ED == "Primaria incompleta" ~ ult_anio,             
-    CH12 == 2 & NIVEL_ED == "Primaria completa" ~ 7,
-    CH12 == 3 & NIVEL_ED == "Primaria incompleta" ~ ult_anio,            
-    CH12 == 3 & NIVEL_ED == "Primaria completa" ~ 9,    
-    CH12 == 4 & NIVEL_ED == "Secundaria incompleta"~ (7 + ult_anio),       
-    CH12 == 4 & NIVEL_ED == "Secundaria completa" ~ 7,    
-    CH12 == 5 & NIVEL_ED == "Secundaria incompleta"~ (9 + ult_anio),       
-    CH12 == 5 & NIVEL_ED == "Secundaria completa"~ (9),           
-    CH12 == 6 ~ (12 + ult_anio),      
-    CH12 == 7 ~ (12 + ult_anio),      
-    CH12 == 8 ~ (12 + ult_anio),      
+  mutate(educn = case_when(               #Nivel más alto cursado:
+    CH12 == 1 ~ 0,                           #Jardín o preescolar
+    CH12 == 2 & CH13 == 1 ~ 7,               #Primario completo
+    CH12 == 2 & CH13 == 2 ~ (0 + ult_anio),  #Primario incompleto
+    CH12 == 3 & CH13 == 1 ~ 9,               #EGB completo          
+    CH12 == 3 & CH13 == 2 ~ (0 + ult_anio),  #EGB incompleto
+    CH12 == 4 & CH13 == 1 ~ 12,              #Secundario completo      
+    CH12 == 4 & CH13 == 2 ~ (7 + ult_anio),  #Secundario incompleto    
+    CH12 == 5 & CH13 == 1 ~ 12,              #Polimodal completo
+    CH12 == 5 & CH13 == 2 ~ (9 + ult_anio),  #Polimodal incompleto        
+    CH12 == 6 & CH13 == 1 ~ 15,              #Terciario completo
+    CH12 == 6 & CH13 == 2 ~ (12 + ult_anio), #Terciario incompleto
+    CH12 == 7 & CH13 == 1 ~ 18,              #Universitario completo
+    CH12 == 7 & CH13 == 2 ~ (12 + ult_anio), #Universitario incompleto  
+    CH12 == 8 & CH13 == 1 ~ 22,              #Posgrado completo
+    CH12 == 8 & CH13 == 2 ~ (18 + ult_anio), #Posgrado incompleto        
     TRUE ~ 0
   ))
 
 #Cambios de nombres de variables
 df <- df %>% 
-  rename(edad = CH06) %>% 
-  rename(est_civ = CH07)
-
+  rename(edad = CH06) %>%
+  rename(est_civ = CH07) %>%
+  mutate(est_civ = recode_factor(est_civ,
+                                 "1" = "Unido",
+                                 "2" = "Casado",
+                                 "3" = "Separado/Divorciado",
+                                 "4" = "Viudo",
+                                 "5" = "Soltero"
+                                 )
+        )
+    
 ### Filtramos según la consigna del primer punto
 df1 <- df %>% 
   filter(CH03 == 1,           #Jefes/as de hogar
          CH04 == 1,           #Hombres          
          edad >= 25,          #Entre 25...      
          edad <= 65,          #...y 65 años     
-         ESTADO == "Ocupado", #Ocupados         
+         ESTADO == 1,         #Ocupados         
          CAT_OCUP == 3,       #Asalariados      
          P21 > 0,             #Salario positivo 
-         CH12 != 9            #¬No respuesta    
+         CH12 != 9            #¬Educación especial    
   )
 
 #Logaritmo del Salario (P21)
@@ -76,7 +89,7 @@ df1 <- df1 %>%
 df1 <- df1 %>% 
   select(NIVEL_ED,
          logSal,
-         educ,
+         educn,
          edad,
          est_civ,
          REGION,

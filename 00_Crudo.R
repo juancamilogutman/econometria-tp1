@@ -10,10 +10,10 @@ eph1 <- readRDS("Bases/eph_1abc.RDS")
 
 #De la limpieza ya trajimos las variables categóricas como factores
 reg1 <- lm(logSal ~ NIVEL_ED + edad +  est_civ + REGION, data = eph1)
-reg2 <- lm(logSal ~ NIVEL_ED + edad + I(edad^2) +  est_civ + REGION, data = eph1)
+reg2 <- lm(logSal ~ NIVEL_ED + edad +  est_civ + AGLOMERADO, data = eph1)
 regs <- list("Sin edad^2" = reg1, "Con edad^2" = reg2)
 
-resultados <- modelsummary(regs,
+res_reg1 <- modelsummary(reg1,
                            escape = TRUE,
                            shape = term ~ model + statistic,
                            #cap = "1er regresión",
@@ -23,9 +23,9 @@ resultados <- modelsummary(regs,
                                      '**' = .05,
                                      '***'=0.01
                                      ),
-
+                           vcov = c("classical", "robust") #Compara errores estándar robustos y no robustos
                            )
-resultados
+res_reg1 #com
 
 
 #para la inferencia robusta de white:

@@ -109,8 +109,11 @@ rdos_regs1y2 %>%
 cm2 <- c("(Intercept)"="Constante",
         "Num.Obs." = "n")
 #Notas
-notas2 <- c("Notes: Aca irían nuestras notas. Comentarios, explicaciones. Elegancia.")
-#falta nota sobre estrellas####
+notas2 <- c("Notas: Acá comentarios, explicaciones, etc.",
+            "***Significant at the 1 percent level.",
+            "**Significant at the 5 percent level.",
+            "*Significant at the 10 percent level."
+            )
 
 epigrafe2 <- 'Tabla 2 — Resultados de la regresión, Ecuación de Mincer
 (estimación del efecto de la educación en el logaritmo de los salarios, controlando por...)'

@@ -10,3 +10,8 @@ https://stackoverflow.com/questions/76500847/modelsummary-goodness-of-fit-disapp
   pero ojo porque broom ya no se usa
 https://ytliu0.github.io/Stat390EF-R-Independent-Study-archive/
 https://tilburgsciencehub.com/topics/visualization/data-visualization/regression-results/model-summary/#report-different-standard-errors
+
+para ver multinomiales:
+https://modelsummary.com/articles/modelsummary.html#formula
+
+para cargar datos de stata: sjlabelled::read_stata()
