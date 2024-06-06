@@ -34,8 +34,6 @@ df <- df %>%
   filter(ult_anio != 98, #¬Educación especial
          ult_anio != 99) #¬Ns/Nr
 
-# df$ult_anio <- remove_var_label(df$ult_anio)
-
 df <- df %>%
   mutate(educn = case_when(               #Nivel más alto cursado:
     CH12 == 1 ~ 0,                           #Jardín o preescolar
