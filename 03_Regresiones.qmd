@@ -54,7 +54,7 @@ En la tabla pueden leerse los resultados de la primer regresión.
 reg1 <- lm(logSal ~ edad + factor(NIVEL_ED) + factor(est_civ) + factor(AGLOMERADO),
            data = df1
            )
-reg2 <- lm(logSal ~ edad + factor(NIVEL_ED) + factor(est_civ) + factor(REGION),
+reg2 <- lm(logSal ~ edad + educn + factor(est_civ) + factor(REGION),
            data = df1
            )
 regs <- list("Sin edad^2" = reg1,
@@ -69,41 +69,42 @@ notas1y2 <- c("Notes: Aca irían nuestras notas. Comentarios, explicaciones. Ele
 
 epigrafe1y2 <- 'Tabla 1 — Resultados de las regresiones, Ecuación de Mincer
 (estimación del efecto de la educación en el logaritmo de los salarios, controlando por...)'
+# 
+# rdos_regs1y2 <- modelsummary(regs,
+#                            escape = TRUE,
+#                            shape = term ~ model + statistic,
+#                            cap = "1eras regresiones",
+#                            #width = 0.8,
+#                            # estimate = "estimate",
+#                            coef_rename = coef_rename,
+#                            #coef_map = cm,
+#                            estimate="{estimate}{stars}",
+#                            statistic = c("p.value",
+#                                          "conf.low",
+#                                          "conf.high"
+#                                          ),
+#                            stars = c('*' = .1,
+#                                      '**' = .05,
+#                                      '***'=0.01
+#                                      ),
+#                            notes = notas1y2,
+#                            title = epigrafe1y2
+#                            )
 
-rdos_regs1y2 <- modelsummary(regs,
-                           escape = TRUE,
-                           shape = term ~ model + statistic,
-                           cap = "1eras regresiones",
-                           #width = 0.8,
-                           # estimate = "estimate",
-                           coef_rename = coef_rename,
-                           #coef_map = cm,
-                           estimate="{estimate}{stars}",
-                           statistic = c("p.value",
-                                         "conf.low",
-                                         "conf.high"
-                                         ),
-                           stars = c('*' = .1,
-                                     '**' = .05,
-                                     '***'=0.01
-                                     ),
-                           notes = notas1y2,
-                           title = epigrafe1y2
-                           )
-
-rdos_regs1y2 %>%
-  theme_tt("multipage",
-           rowhead = 1
-           ) %>%
-  group_tt(i = list("Nivel Educativo" = 3,
-                    "Estado Civil" = 9,
-                    "Aglomerado" = 13,
-                    "Región" = 44
-                    ),
-           )
+# rdos_regs1y2 %>%
+#   theme_tt("multipage",
+#            rowhead = 1
+#            ) %>%
+#   group_tt(i = list("Nivel Educativo" = 3,
+#                     "Estado Civil" = 9,
+#                     "Aglomerado" = 13,
+#                     "Región" = 44
+#                     ),
+#            )
 ```
 
 ```{r}
+#| echo: false
 
 #coefmap
 cm2 <- c("(Intercept)"="Constante",
@@ -147,6 +148,48 @@ rdo_reg2 %>%
                     "Bondad de Ajuste" = 18
                     ),
            )
+```
+
+```{r}
+gof2 <- get_gof(reg2)
+gof2 <- as.data.frame(t(gof2), optional = TRUE)
+gof2$estad <- rownames(gof2)
+gof2 <- gof2 %>% select(estad, everything())
+names(gof2) <- NULL
+
+gof1 <- get_gof(reg2)
+gof1 <- as.data.frame(t(gof1), optional = TRUE)
+gof1$estad <- rownames(gof1)
+gof1 <- gof1 %>% select(estad, everything())
+names(gof1) <- NULL
+```
+
+```{r}
+#| layout-ncol: 2
+gof1 <- gof1[4:nrow(gof1)-1,]
+
+gof1$orden <- c(3, 1, 2, 4, 5)
+
+gof1<- gof1 %>%
+  arrange(orden)
+
+gof1$orden <- NULL
+
+gof2 %>% tt()
+```
+
+```{r}
+gm1 <- gof_map
+gm1[1,2] <- "n"
+gm1[16:19,4] <- "TRUE" #Chau a los AIC y BIC
+gm1[16:19,]
+
+gof1 <- get_gof(reg1, gof_map = gm1)
+gof1 %>% tt()
+```
+
+```{r}
+Anova(reg2) %>% tt()
 ```
 
 ```{=tex}
