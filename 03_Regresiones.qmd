@@ -39,6 +39,13 @@ Nos quedamos únicamente con los jefes de hogar, hombres, con edades entre 25 y 
 
 Cras a molestie nulla. [@Hemingway1952]
 
+Siguiendo a [@koenker2005], encontramos que:
+
+```{r}
+#| echo: true
+#| file: 01C_qreg.R
+```
+
 [@pradier2023]
 
 En la tabla pueden leerse los resultados de la primer regresión.
@@ -51,10 +58,10 @@ En la tabla pueden leerse los resultados de la primer regresión.
 ```{r}
 #| echo: false
 
-reg1 <- lm(logSal ~ edad + factor(NIVEL_ED) + factor(est_civ) + factor(AGLOMERADO),
+reg1 <- lm(logSal ~ edad + educf + est_civ + region,
            data = df1
            )
-reg2 <- lm(logSal ~ edad + educn + factor(est_civ) + factor(REGION),
+reg2 <- lm(logSal ~ edad + educn + est_civ + region,
            data = df1
            )
 regs <- list("Sin edad^2" = reg1,
@@ -166,16 +173,16 @@ names(gof1) <- NULL
 
 ```{r}
 #| layout-ncol: 2
-gof1 <- gof1[4:nrow(gof1)-1,]
-
-gof1$orden <- c(3, 1, 2, 4, 5)
-
-gof1<- gof1 %>%
-  arrange(orden)
-
-gof1$orden <- NULL
-
-gof2 %>% tt()
+# gof1 <- gof1[4:nrow(gof1)-1,]
+# 
+# gof1$orden <- c(3, 1, 2, 4, 5)
+# 
+# gof1<- gof1 %>%
+#   arrange(orden)
+# 
+# gof1$orden <- NULL
+# 
+# gof2 %>% tt()
 ```
 
 ```{r}
@@ -189,8 +196,10 @@ gof1 %>% tt()
 ```
 
 ```{r}
-Anova(reg2) %>% tt()
+# Anova(reg2) %>% tt()
 ```
+
+\input testlineal.tex
 
 ```{=tex}
 \newpage

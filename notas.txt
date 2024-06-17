@@ -4,6 +4,7 @@ librerías:
   marginaleffects
   parameters
   insight
+  quantreg
   
 https://modelsummary.com/articles/modelsummary.html#gof_omit-goodness-of-fit-and-model-characteristics
 https://stackoverflow.com/questions/76500847/modelsummary-goodness-of-fit-disappeares-when-the-table-shape-is-changed
@@ -15,3 +16,8 @@ para ver multinomiales:
 https://modelsummary.com/articles/modelsummary.html#formula
 
 para cargar datos de stata: sjlabelled::read_stata()
+
+para regresion en cuantiles (y graficar):
+https://www.youtube.com/watch?v=BPDr-BbRfK0
+
+sobre porque no usar R^2 en GLM

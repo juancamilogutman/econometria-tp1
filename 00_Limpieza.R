@@ -27,12 +27,15 @@ df <- df %>% mutate_at(vars(NIVEL_ED,
 ### Generacion de la variable de años de educacion ####
 df <- df %>% 
   mutate(CH14bis = replace_na(CH14, 0)) %>% 
-  mutate(CH14bis = replace(CH14, CH14 == "", 0))
+  mutate(CH14bis = replace(CH14bis, CH14bis == "", 0))
 
 df <- df %>% 
   mutate(ult_anio = as.numeric(CH14bis)) %>%
-  filter(ult_anio != 98, #¬Educacion especial
-         ult_anio != 99) #¬Ns/Nr
+  mutate(ult_anio = case_when(
+    ult_anio == 98 ~ 0,  # Educacion especial
+    ult_anio == 99 ~ 0,  # Ns/Nr
+    TRUE ~ ult_anio      # Keep original values for other cases
+  ))
 
 df <- df %>%
   mutate(educn = case_when(               #Nivel mas alto cursado:
@@ -124,10 +127,24 @@ df <- df %>%
                                "4" = "Secundario completo",
                                "5" = "Superior universitario incompleto",
                                "6" = "Superior universitario completo",
-                               "7" = "Sin instruccion",
-                               "9" = "Ns/Nr"
+                               "7" = "Sin instruccion"
                                )
          )
+
+### Generacion de la variable de intervalos de edad ####
+df <- df %>% 
+  mutate(edadi = case_when(
+    edad >= 25 & edad <= 29 ~ "De 25 a 29 años",
+    edad >= 30 & edad <= 34 ~ "De 30 a 34 años",
+    edad >= 35 & edad <= 39 ~ "De 35 a 39 años",
+    edad >= 40 & edad <= 44 ~ "De 40 a 44 años",
+    edad >= 45 & edad <= 49 ~ "De 45 a 49 años",
+    edad >= 50 & edad <= 54 ~ "De 50 a 54 años",
+    edad >= 55 & edad <= 59 ~ "De 55 a 59 años",
+    edad >= 60 & edad <= 65 ~ "De 60 a 65 años",
+    TRUE ~ NA_character_
+  )) %>%
+  mutate(edadi = factor(edadi))
 
 ### Filtramos segan la consigna del primer punto
 df1 <- df %>% 
@@ -151,6 +168,7 @@ df1 <- df1 %>%
          educn,
          educf,
          edad,
+         edadi,
          est_civ,
          region,
          aglomerado,
@@ -159,27 +177,40 @@ df1 <- df1 %>%
          PONDII
   )
 
-# • Factores de expansion
-# 
-# Para minimizar el efecto de la no respuesta de ingresos, se asigno a los no respondentes
-# el comportamiento de los respondentes por estrato de la muestra. Por lo tanto,
-# para el tratamiento de los ingresos y la pobreza se presentan dos tipos de ponderadores:
-# 1. El campo PONDERA, sin correccion, que se utiliza ademas para el resto de las
-# variables.
-# 2. Los campos PONDII, PONDIIO, PONDIH con correccion por no respuesta:
-# •PONDII para el tratamiento del ingreso total individual (p47t, decindr,
-#  adecindr, rde-cindr, pdecindr, gdecindr, idecindr).
-# •PONDIIO para el ingreso de la ocupacion principal (p21, pp06c, pp06d,
-#  pp08d1, pp08d4, pp08f1, pp08f2, decocur, adecocur, rdecocur, pdecocur, gdecocur, idecocur).
-# •PONDIH para el ingreso total familiar (ITF, decifr, adecifr, rdecifr,
-#  pdecifr, gdecifr, idecifr), el ingreso per capita familiar (IPCF, deccfr, adecifr, rdecifr, pdecifr, gdecifr, idecifr).
+### Filtramos segan la consigna del primer punto
+df2 <- df %>% 
+  filter(CH03 == 1,           #Jefes/as de hogar
+         CH04 == 1,           #Hombres          
+         edad >= 25,          #Entre 25...      
+         edad <= 65,          #...y 65 años     
+         ESTADO == 1 | ESTADO == 2,         #Ocupados         
+         #CAT_OCUP == 3,       #Asalariados      
+         #P21 > 0,             #Salario positivo 
+         CH12 != 9            #¬Educacion especial    
+  )
+
+df2 <- df2 %>% mutate(estado = case_when(
+  ESTADO == 1 ~ 0,  #0 si está empleado
+  ESTADO == 2 ~ 1,  #1 si está desempleado
+  TRUE ~ NA_real_))
+
+df2 <- df2 %>% 
+  select(estado,
+         educn,
+         educf,
+         edad,
+         edadi,
+         est_civ,
+         region,
+         aglomerado
+  )
 
 saveRDS(df1, file = "Bases/eph_1abc.RDS")
-#saveRDS(df2, file = "eph_1de.RDS")
-#saveRDS(df3, file = "eph_2ab.RDS")
+saveRDS(df2, file = "Bases/eph_1de.RDS")
+#saveRDS(df3, file = "Bases/eph_2ab.RDS")
 
-#sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
-
+# sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
+# sjlabelled::write_stata(df2, "Bases/eph_1de.dta")
 
 
 
