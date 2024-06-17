@@ -22,7 +22,7 @@ eph2 <- readRDS("Bases/eph_1de.RDS")
 # library(ggplot2) # grÃ¡ficos, dentro de tidyverse
 # library(stargazer)
 
-mpl <- lm(estado ~ educf + edadi + region + est_civ, eph2)
+mpl <- lm(estado ~ educf + edad + I(edad^2) + region + est_civ, eph2)
 
 resumen <- modelsummary(mpl)
 resumen
@@ -41,9 +41,9 @@ desoc <- sum(eph2$estado == 1)
 ocups
 desoc
 
-probit <- glm(estado ~ educf + edadi + region + est_civ, family = binomial(link = "probit"), 
+probit <- glm(estado ~ educf + edad + I(edad^2) + region + est_civ, family = binomial(link = "probit"), 
                 data = eph2)
-logit <- glm(estado ~ educf + edadi + region + est_civ, family = binomial(link = "logit"), 
+logit <- glm(estado ~ educf + edad + I(edad^2) + region + est_civ, family = binomial(link = "logit"), 
                data = eph2)
 
 rdo_probit <- tidy(probit)
@@ -53,8 +53,20 @@ eph2$proba_probit <- predict(probit, newdata = eph2, type = "response")
 eph2$proba_logit <- predict(logit, newdata = eph2, type = "response")
 
 cc <- coef(logit)
-vec_coef <- c(cc["educfSecundario completo"], cc[est_civCasado], 5)
-hombrecasado <- 
-print(vec_coef)
+cons_logit <- cc["(Intercept)"]
+edad_logit <- cc["edad"]
+edad2_logit <- cc["I(edad^2)"]
+# vec_coef <- c(cc["educfSecundario completo"], cc[est_civCasado], 5)
+# hombrecasado <- 
+# print(vec_coef)
 
+dfz <- data.frame(
+  Edad = 25:65,
+  z = rep(0, 65 - 25 + 1),
+  Proba_Desocup = rep(0, 65 - 25 + 1)
+)
+
+dfz <- dfz %>% mutate(z = cons_logit + edad_logit * dfz$Edad+ edad2_logit * (dfz$Edad)^2)
+
+dfz <- dfz %>% mutate(Proba_Desocup = exp(dfz$z) / (1 + exp(dfz$z))^2)
 

@@ -146,6 +146,11 @@ df <- df %>%
   )) %>%
   mutate(edadi = factor(edadi))
 
+### Rebase de los factores
+df$educf <- relevel(df$educf,"Secundario completo")
+df$est_civ <- relevel(df$est_civ,"Casado")
+df$region <- relevel(df$region,"GBA")
+
 ### Filtramos segan la consigna del primer punto
 df1 <- df %>% 
   filter(CH03 == 1,           #Jefes/as de hogar

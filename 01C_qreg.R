@@ -15,8 +15,6 @@ options(tinytable_theme_placement_latex_float = "H")
 
 eph1 <- readRDS("Bases/eph_1abc.RDS")
 
-eph1$educf <- relevel(eph1$educf,"Secundario completo")
-
 # Ajustamos al mismo modelo del punto 1A una regresión por deciles.
 qreg <- rq(logSal ~ educf + edadi +  est_civ + region, tau = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), data = eph1)
 
