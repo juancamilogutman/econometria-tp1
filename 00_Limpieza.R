@@ -214,12 +214,5 @@ saveRDS(df1, file = "Bases/eph_1abc.RDS")
 saveRDS(df2, file = "Bases/eph_1de.RDS")
 #saveRDS(df3, file = "Bases/eph_2ab.RDS")
 
-# sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
-# sjlabelled::write_stata(df2, "Bases/eph_1de.dta")
-
-
-
-
-
-
-
+sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
+sjlabelled::write_stata(df2, "Bases/eph_1de.dta")

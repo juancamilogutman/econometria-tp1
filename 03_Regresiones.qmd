@@ -199,7 +199,9 @@ gof1 %>% tt()
 # Anova(reg2) %>% tt()
 ```
 
-\input testlineal.tex
+\input
+
+testlineal.tex
 
 ```{=tex}
 \newpage

@@ -1,0 +1,29 @@
+---
+title: "1er Trabajo Práctico de Econometría"
+author:
+  - name: Mauro Ciani
+  - name: Juan Camilo Gutman
+
+abstract: > 
+  El presente trabajo se propuso blabla
+---
+
+Increíble, pero gracias al paquete "Statamarkdown" se puede correr Stata acá.
+
+```{r}
+#|echo: false
+
+library(Statamarkdown)
+```
+
+```{stata}
+
+use "bases\eph_1abc.dta"
+gen edad2 = edad^2
+
+reg logSal educn edad edad2 i.est_civ i.region
+estimates store reg1
+
+test _b[edad2] * 100 + _b[edad] = 0
+estimates store testlineal
+```

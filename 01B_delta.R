@@ -1,3 +1,4 @@
+#PUNTO 1B
 rm(list=ls()) #Limpiamos la memoria
 
 library(tidyverse)       # Para manejar bases de datos
@@ -5,67 +6,12 @@ library(ggplot2)         # Para graficar
 library(modelsummary)    # Mejores tablas de regresión 
 library(tinytable)       # Motor de creación de tablas
 library(sandwich)        # Robust Covariance Matrix Estimators
-library(marginaleffects) # Método Delta implementación
 library(quantreg)        # Regresión por cuantiles
-library(msm)             # Test simil testnl de STATA
-library(car)
-
-options(tinytable_tt_digits = 3)
-options(tinytable_theme_placement_latex_float = "H")
 
 eph1 <- readRDS("Bases/eph_1abc.RDS")
-#str(eph1)
 
-#De la limpieza ya trajimos las variables categóricas como factores
-
-#PUNTO 1A
-a_reg1 <- lm(logSal ~ educn + edad +  est_civ + region, data = eph1)
-reg2 <- lm(logSal ~ educf + edad +  est_civ + region, data = eph1)
-reg3 <- lm(logSal ~ educf + edad +  est_civ + region, data = eph1)
-regs <- list("Años de educación" = a_reg1, "Nivel de educación" = reg2, "Salario No Log" = reg3)
-
-res_reg1 <- modelsummary(a_reg1,
-                           escape = TRUE,
-                           shape = term ~ model + statistic,
-                           #cap = "1er regresión",
-                           estimate="{estimate}{stars}",
-                           statistic = c("p.value", "conf.low", "conf.high"),
-                           stars = c('*' = .1,
-                                     '**' = .05,
-                                     '***'=0.01
-                                     ),
-                           # vcov = "classical" #para var y covar clásicas
-                           vcov = c("classical", "robust") #Compara errores estándar robustos y no robustos
-                           )
-
-# Contraste popr supuesto de homocedasticidad con Breusch-Pagan  
-# Gabriel dijo en el minuto 1:17:00 de la clase del tp que para
-# hacer un contraste de si se cumple homocedasticidad habría que
-# correr una regresión de los residuos al cuadrado contra las 
-# variables explicativas.
-
-# Ver el p valor del test F de esa regresión auxiliar.
-
-#PARA INFERENCIA ROBUSTA DE WHITE:
-#modelsummary(reg3,vcov = "robust")
-#incluso, capaz se pueden comparar con:
-# vcov = c("classical", "robust")
-
-##Calcular matriz de covarianza robusta (corrección de heterocedasticidad) Las
-##opciones comunes son "HC0", "HC1", "HC2", "HC3", etc. Estas opciones difieren
-##en la forma en que ajustan la matriz de covarianza. Por ejemplo, type = "HC0"
-##es la estimación más básica y type = "HC3" es la más conservadora.
-
-vcov_White <- vcovHC (a_reg1, type="HC0")
-
-##Obtenemos estadísticos de inferencia robustas (pruebas de hipótesis de los
-##coef obtenidos pero utilizando la mat de covarianzas robusta)
-
-# df_coef <- as.data.frame(coeftest(a_reg1, vcov_White))
-
-#PUNTO 1B
-b_reg1 <- lm(logSal ~ educn + edad + I(edad^2) + est_civ + region, data = eph1)
-b_coef_estim <- coef(b_reg1)
+reg_b <- lm(logSal ~ educn + edad + I(edad^2) + est_civ + region, data = eph1)
+b_coef_estim <- coef(reg_b)
 b_edad_max_salario <- (-1*b_coef_estim ["edad"])/(2*b_coef_estim["I(edad^2)"])
 print (b_edad_max_salario)
 
@@ -84,7 +30,7 @@ print(b_dg_coef_edad2)
 b_gradiente <- c(b_dg_coef_edad, b_dg_coef_edad2)
 print(b_gradiente)
 
-b_vcov_mat <- vcov(b_reg1)
+b_vcov_mat <- vcov(reg_b)
 #view(b_vcov_mat)
 
 b_vcov_mat_edad <- b_vcov_mat [3:4,3:4]
@@ -126,6 +72,9 @@ segments(b_estad_z_crit, b_int_conf[1], b_estad_z_crit, b_int_conf[2], col = "bl
 points(b_estad_z_crit, b_edad_max_salario, col = "blue", pch = 19)
 text(b_estad_z_crit + 0.1, b_edad_max_salario, "Edad_estim W_max", pos = 4, col = "blue")
 
+# "Para el int confianza creado a partir del metodo delta, aceptaríamos la Hip nula de que edad=50 maximiza al salario"
+# NO ME GUSTA COMO ESTA REDACTADO ESTO, es poco riguroso, hay que decirlo como que "esto sugiere que probablemente rechazaríamos"
+
 # Definimos la función de restricción no lineal
 g <- function(coef) {
   beta1 <- coef["edad"]
@@ -133,14 +82,48 @@ g <- function(coef) {
   return((-1*beta1)/(2*(beta2)))
 }
 
-# Obtenemos las estimaciones de los coeficientes
-b_betas_hat <- coef(b_reg1)
+# Obtener las estimaciones de los coeficientes
+b_betas_hat <- coef(reg_b)
 b_beta1_hat <- b_betas_hat["edad"]
 b_beta2_hat <- b_betas_hat["I(edad^2)"]
 
-# Evaluamos la función de restricción en las estimaciones
+# Evaluar la función de restricción en las estimaciones
 #restriction_value <- g(b_beta1_hat, b_beta2_hat)
 b_hipotesis_nl <- g(b_betas_hat)
 
 print(b_beta1_hat)
 print(b_beta2_hat)
+
+##Armado de test de hipotesis simil 'testnl' en STATA
+# transformation <- function(coef) { exp(coef["edad"]) / (1 +coef["I(edad^2)"]) }
+
+# A MANOPLA ####
+# Extraer los coeficientes
+beta_hat <- coef(reg_b)
+
+# Extraer la matriz de varianza-covarianza de los coeficientes
+vcov_beta_hat <- vcov(reg_b)
+
+# Definir la matriz de hipótesis para "2 * beta[I(edad^2)] * 50 + beta[edad] = 0"
+# Asumiendo que 'edad' es el tercer coeficiente y 'I(edad^2)' es el cuarto coeficiente
+A <- matrix(c(0, 0, 1, 100, rep(0, length(beta_hat) - 4)), ncol = length(beta_hat))
+
+# Calcular el estadístico de prueba Wald
+W <- t(A %*% beta_hat) %*% solve(A %*% vcov_beta_hat %*% t(A)) %*% (A %*% beta_hat)
+
+# El estadístico de prueba Wald sigue una distribución chi-cuadrado
+# Obtener el valor p
+p_value <- pchisq(W, df = 1, lower.tail = FALSE)
+
+# Imprimir el estadístico de prueba y el valor p
+print(W)
+print(p_value)
+
+# Crear un dataframe con el estadístico de prueba y el valor p
+results_df <- data.frame(Estadistico_De_Prueba = W, pValor = p_value)
+
+# Convertir el dataframe a una tabla tinytable
+results_table <- tt(results_df)
+
+# Mostrar la tabla
+print(results_table)
