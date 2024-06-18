@@ -1,0 +1,10 @@
+---
+title: "ANEXO: Limpieza y filtrado de la base de datos"
+---
+
+# Jeje
+
+```{r}
+#| echo: true
+#| file: 00_Limpieza.R
+```

@@ -4,7 +4,8 @@ rm(list=ls()) #Limpiamos la memoria
 
 ##Librerias####
 library(tidyverse)    #Para manejar bases de datos.
-library(eph)          #Libreria hecha por cientificxs argentinxs. 
+library(eph)          #Libreria hecha por cientificxs argentinxs.
+library(tinytable)
 
 ##Descarga de base####
 df <- get_microdata(year = 2023, #del paquete EPH
@@ -151,6 +152,7 @@ df$educf <- relevel(df$educf,"Secundario completo")
 df$est_civ <- relevel(df$est_civ,"Casado")
 df$region <- relevel(df$region,"GBA")
 
+## Base del primer punto ####
 ### Filtramos segan la consigna del primer punto
 df1 <- df %>% 
   filter(CH03 == 1,           #Jefes/as de hogar
@@ -168,6 +170,7 @@ df1 <- df1 %>%
   mutate(logSal = log(df1$P21)
   )
 
+### Seleccionamos las columnas para el 1abc) ####
 df1 <- df1 %>% 
   select(logSal,
          educn,
@@ -182,7 +185,7 @@ df1 <- df1 %>%
          PONDII
   )
 
-### Filtramos segan la consigna del primer punto
+### ## Filtramos para los puntos 1d y 1e ####
 df2 <- df %>% 
   filter(CH03 == 1,           #Jefes/as de hogar
          CH04 == 1,           #Hombres          
@@ -199,6 +202,7 @@ df2 <- df2 %>% mutate(estado = case_when(
   ESTADO == 2 ~ 1,  #1 si está desempleado
   TRUE ~ NA_real_))
 
+### Seleccionamos las columnas para el 1de) ####
 df2 <- df2 %>% 
   select(estado,
          educn,
@@ -210,9 +214,105 @@ df2 <- df2 %>%
          aglomerado
   )
 
-saveRDS(df1, file = "Bases/eph_1abc.RDS")
-saveRDS(df2, file = "Bases/eph_1de.RDS")
-#saveRDS(df3, file = "Bases/eph_2ab.RDS")
+## Base del segundo punto ####
+# PP3E_TOT N(5,1)
+# Total de horas que trabajó en la semana
+# en la ocupación principal
+# 
+# PP3F_TOT N(5,1)
+# Total de horas que trabajó en la semana
+# en otras ocupaciones
 
-sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
-sjlabelled::write_stata(df2, "Bases/eph_1de.dta")
+### Generación de la variable de horas trabajadas:
+df <- df %>% 
+  mutate(PP3E_TOT = replace_na(PP3E_TOT, 0)) %>% 
+  mutate(PP3E_TOT = replace(PP3E_TOT, as.numeric(PP3E_TOT) == 999, 0)) %>% 
+
+  mutate(PP3F_TOT = replace_na(PP3F_TOT, 0)) %>% 
+  mutate(PP3F_TOT = replace(PP3F_TOT, as.numeric(PP3F_TOT) == 999, 0)) %>% 
+
+  mutate(horas = as.numeric(PP3E_TOT) + as.numeric(PP3F_TOT))
+  
+# Acá mostraría en una tabla la decisión de sumar las horas, que me parece interesante.
+# O incluso, si decidimos no mostrarlas, mostrar igual la tablita esta:
+tabla_full_time <- data.frame(
+  Según_PP3F_TOT = sum(df$PP3F_TOT >= 35),
+  Según_PP3E_TOT = sum(df$PP3E_TOT >= 35),
+  Según_Ambas = sum(df$horas >= 35)
+)
+
+rownames(tabla_full_time) <- "Trabajadores Jornada Completa"
+
+tabla_full_time
+tt(tabla_full_time)
+
+### Generación de variable de formalidad que funciona pero mal ####
+df <- df %>%
+  mutate(formalidad = case_when(
+    PP07H == 2 ~ "Sin aportes",
+    (as.numeric(PP07H) == 1) & (as.numeric(PP07I) == 1) ~ "Aportes Propios",
+    (as.numeric(PP07H) == 1) & (as.numeric(PP07I) == 2) ~ "Aportes Empleador",
+    (as.numeric(PP07H) == 1) & (is.na(PP07I)) ~ "Aportes indefinidos",
+    TRUE ~ as.character(NA)
+    ))
+  mutate(formalidad = factor(formalidad,
+                             levels = c("Sin aportes",
+                                        "Aportes indefinidos",
+                                        "Aportes Propios",
+                                        "Aportes Empleador"
+                                        ),
+                             ordered = TRUE
+                             ))
+
+# ### Generación de variable de formalidad ####
+# df <- df %>%
+#   mutate(formalidad = case_when(
+#     PP07H == 2 ~ "Sin aportes",
+#     PP07H == 1 & PP07I == 1 ~ "Aportes Propios",
+#     PP07H == 1 & PP07I == 2 ~ "Aportes Empleador",
+#     PP07H == 1 & is.na(PP07I) ~ "Aportes indefinidos",
+#     TRUE ~ as.character(NA)
+#     )) %>%
+#   mutate(formalidad = factor(formalidad, 
+#                              levels = c("Sin aportes",
+#                                         "Aportes indefinidos",
+#                                         "Aportes Propios",
+#                                         "Aportes Empleador"
+#                                         ),
+#                              ordered = TRUE
+#                              ))
+
+## Filtramos para el punto 2 ####
+df3 <- df %>% 
+  filter(CH03 == 1,           #Jefes/as de hogar
+         CH04 == 1,           #Hombres          
+         edad >= 25,          #Entre 25...      
+         edad <= 65,          #...y 65 años   
+         CAT_OCUP == 3,       #Asalariados
+         # ESTADO == 1 | ESTADO == 2,         #Ocupados, que no debería cambiar.
+         PP3E_TOT >= 35,      #Solo los que trabajan jornada completa en ocup. ppal.
+         # horas >= 35,       #Quienes trabajan jornada completa en total
+         #P21 > 0,            #Salario positivo 
+         CH12 != 9            #¬Educacion especial 
+         )
+
+sum(is.na(df3$formalidad))
+# ### Seleccionamos las columnas para el 2ab) ####
+# df3 <- df3 %>%
+#   select(estado,
+#          educn,
+#          educf,
+#          edad,
+#          edadi,
+#          est_civ,
+#          region,
+#          aglomerado
+#   )
+
+# saveRDS(df1, file = "Bases/eph_1abc.RDS")
+# saveRDS(df2, file = "Bases/eph_1de.RDS")
+# saveRDS(df3, file = "Bases/eph_2ab.RDS")
+# 
+# sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
+# sjlabelled::write_stata(df2, "Bases/eph_1de.dta")
+# sjlabelled::write_stata(df2, "Bases/eph_2ab.dta")
