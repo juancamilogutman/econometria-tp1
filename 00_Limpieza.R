@@ -358,7 +358,6 @@ sum(is.na(df4$formalidad))
 ### Seleccionamos las columnas para el 2ab) ####
 df4 <- df4 %>%
   select(formalidad,
-         estado,
          educn,
          educf,
          edad,
@@ -374,5 +373,6 @@ saveRDS(df3, file = "Bases/eph_1e.RDS")
 saveRDS(df4, file = "Bases/eph_2ab.RDS")
 
 # sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
-# sjlabelled::write_stata(df2, "Bases/eph_1de.dta")
-# sjlabelled::write_stata(df2, "Bases/eph_2ab.dta")
+# sjlabelled::write_stata(df2, "Bases/eph_1d.dta")
+# sjlabelled::write_stata(df3, "Bases/eph_1e.dta")
+# sjlabelled::write_stata(df4, "Bases/eph_2ab.dta")
