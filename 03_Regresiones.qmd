@@ -43,7 +43,7 @@ Siguiendo a [@koenker2005], encontramos que:
 
 ```{r}
 #| echo: true
-#| file: 01C_qreg.R
+#| file: 01B_delta.R
 ```
 
 [@pradier2023]

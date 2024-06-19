@@ -12,7 +12,7 @@ library(mfx)             # Para evaluar el efecto marginal en las medias
 library(margins)         # Puerto/adaptación del comando margins de Stata
 library(stargazer)       # Otras tablas de resumen de modelos
 
-eph2 <- readRDS("Bases/eph_1de.RDS") 
+eph2 <- readRDS("Bases/eph_1d.RDS") 
 
 #Estimamos un modelo de probabilidad lineal
 mpl <- lm(estado ~ educf + edad + I(edad^2) + region + est_civ, eph2)

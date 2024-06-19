@@ -249,20 +249,37 @@ tt(tabla_full_time)
 ### Generación de variable de formalidad que funciona pero mal ####
 df <- df %>%
   mutate(formalidad = case_when(
-    PP07H == 2 ~ "Sin aportes",
-    (as.numeric(PP07H) == 1) & (as.numeric(PP07I) == 1) ~ "Aportes Propios",
-    (as.numeric(PP07H) == 1) & (as.numeric(PP07I) == 2) ~ "Aportes Empleador",
-    (as.numeric(PP07H) == 1) & (is.na(PP07I)) ~ "Aportes indefinidos",
+    df$PP07I == 1 ~ "Aportes Propios",
+    df$PP07H == 1 ~ "Aportes Empleador",
+    (df$PP07H == 2) | (df$PP07I == 2)~ "Sin Aportes",
     TRUE ~ as.character(NA)
-    ))
+  )) %>% 
   mutate(formalidad = factor(formalidad,
-                             levels = c("Sin aportes",
-                                        "Aportes indefinidos",
+                             levels = c("Sin Aportes",
                                         "Aportes Propios",
                                         "Aportes Empleador"
-                                        ),
+                             ),
                              ordered = TRUE
-                             ))
+                             )
+         )
+
+
+
+# df <- df %>%
+#   mutate(formalidad = case_when(
+#     (df$PP07H == 2) | (df$PP07H == 0) ~ "Sin aportes",
+#     (as.numeric(df$PP07H) == 1) & (as.numeric(df$PP07I) == 1) ~ "Aportes Propios",
+#     (as.numeric(df$PP07H) == 1) & (as.numeric(df$PP07I) == 2) ~ "Aportes Empleador",
+#     (as.numeric(df$PP07H) == 1) & (is.na(df$PP07I) | as.numeric(df$PP07H) == 0) ~ "Aportes indefinidos",
+#     TRUE ~ as.character(NA)
+#     )) %>% 
+  # mutate(formalidad = factor(formalidad,
+  #                            levels = c("Sin aportes",
+  #                                       "Aportes Propios",
+  #                                       "Aportes Empleador"
+  #                                       ),
+  #                            ordered = TRUE
+  #                            ))
 
 # ### Generación de variable de formalidad ####
 # df <- df %>%
@@ -282,37 +299,80 @@ df <- df %>%
 #                              ordered = TRUE
 #                              ))
 
-## Filtramos para el punto 2 ####
+## Filtramos para el punto 1e ####
 df3 <- df %>% 
   filter(CH03 == 1,           #Jefes/as de hogar
          CH04 == 1,           #Hombres          
          edad >= 25,          #Entre 25...      
          edad <= 65,          #...y 65 años   
          CAT_OCUP == 3,       #Asalariados
-         # ESTADO == 1 | ESTADO == 2,         #Ocupados, que no debería cambiar.
-         PP3E_TOT >= 35,      #Solo los que trabajan jornada completa en ocup. ppal.
-         # horas >= 35,       #Quienes trabajan jornada completa en total
+         ESTADO == 1 | ESTADO == 2, #Ocupadosy desocupados
+         # P21  0,            #Salario positivo 
+         CH12 != 9            #¬Educacion especial 
+  )
+
+df3 <- df3 %>% mutate(estado = case_when(
+  ESTADO == 1 ~ 1,  #1 si está empleado
+  ESTADO == 2 ~ 0,  #0 si está desempleado
+  TRUE ~ NA_real_))
+
+#Logaritmo del Salario (P21)
+df3 <- df3 %>% 
+  mutate(logSal = log(df3$P21)
+  )
+
+df3 <- df3 %>% mutate(logSal = case_when(
+  logSal == -Inf ~ 0,
+  TRUE ~ logSal)) 
+
+# df3 <- df3 %>% filter(!is.na(df3$logSal))
+
+df3 <- df3 %>% 
+  select(logSal,
+         estado,
+         educn,
+         educf,
+         edad,
+         edadi,
+         est_civ,
+         region,
+         aglomerado
+  )
+# data <- na.omit(data)
+
+## Filtramos para el punto 2 ####
+df4 <- df %>% 
+  filter(CH03 == 1,           #Jefes/as de hogar
+         CH04 == 1,           #Hombres          
+         edad >= 25,          #Entre 25...      
+         edad <= 65,          #...y 65 años   
+         CAT_OCUP == 3,       #Asalariados
+         #PP3E_TOT >= 35,     #Solo los que trabajan jornada completa en ocup. ppal.
+         horas >= 35,         #Quienes trabajan jornada completa en total
          #P21 > 0,            #Salario positivo 
          CH12 != 9            #¬Educacion especial 
          )
 
-sum(is.na(df3$formalidad))
-# ### Seleccionamos las columnas para el 2ab) ####
-# df3 <- df3 %>%
-#   select(estado,
-#          educn,
-#          educf,
-#          edad,
-#          edadi,
-#          est_civ,
-#          region,
-#          aglomerado
-#   )
+sum(is.na(df4$formalidad))
 
-# saveRDS(df1, file = "Bases/eph_1abc.RDS")
-# saveRDS(df2, file = "Bases/eph_1de.RDS")
-# saveRDS(df3, file = "Bases/eph_2ab.RDS")
-# 
+### Seleccionamos las columnas para el 2ab) ####
+df4 <- df4 %>%
+  select(formalidad,
+         estado,
+         educn,
+         educf,
+         edad,
+         edadi,
+         est_civ,
+         region,
+         aglomerado
+  )
+
+saveRDS(df1, file = "Bases/eph_1abc.RDS")
+saveRDS(df2, file = "Bases/eph_1d.RDS")
+saveRDS(df3, file = "Bases/eph_1e.RDS")
+saveRDS(df4, file = "Bases/eph_2ab.RDS")
+
 # sjlabelled::write_stata(df1, "Bases/eph_1abc.dta")
 # sjlabelled::write_stata(df2, "Bases/eph_1de.dta")
 # sjlabelled::write_stata(df2, "Bases/eph_2ab.dta")

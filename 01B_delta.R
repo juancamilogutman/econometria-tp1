@@ -1,6 +1,4 @@
 #PUNTO 1B
-rm(list=ls()) #Limpiamos la memoria
-
 library(tidyverse)       # Para manejar bases de datos
 library(ggplot2)         # Para graficar
 library(modelsummary)    # Mejores tablas de regresión 
@@ -12,16 +10,18 @@ eph1 <- readRDS("Bases/eph_1abc.RDS")
 
 reg_b <- lm(logSal ~ educn + edad + I(edad^2) + est_civ + region, data = eph1)
 b_coef_estim <- coef(reg_b)
-b_edad_max_salario <- (-1*b_coef_estim ["edad"])/(2*b_coef_estim["I(edad^2)"])
+b_edad_max_salario <- (-1*b_coef_estim["edad"])/(2*b_coef_estim["I(edad^2)"])
 print (b_edad_max_salario)
 
 
 #Buscamos la varianza según el método delta
 ##Definimos a la función g de los parametros de interés como (-1*b_coef_estim ["edad"])/(2*b_coef_estim["I(edad^2)"])
+print("$$ \beta $$")
+
 ## _b[edad2] * 2 * edad + _b[edad] = 0
 ## edad = -(_b[edad]) / 2 _b[edad2]
 
-b_dg_coef_edad <-(-1)/(2*2*b_coef_estim["I(edad^2)"])
+b_dg_coef_edad <-(-1)/(2*b_coef_estim["I(edad^2)"])
 print(b_dg_coef_edad)
 
 b_dg_coef_edad2 <-(b_coef_estim ["edad"])/(2*((b_coef_estim["I(edad^2)"])^2))
@@ -49,7 +49,7 @@ b_alpha3 <- 0.01  # Nivel de significancia: 99% de confianza
 # Estimación de g(theta) {NO}
 #g_hat <- g(theta_hat) {NO}
 
-b_alpha = b_alpha3
+b_alpha = b_alpha2
 b_error_std <- qnorm(1 - b_alpha/ 2) * sqrt(b_var_delta)
 b_int_conf <- c(b_edad_max_salario - b_error_std, b_edad_max_salario + b_error_std)
 b_estad_z_crit <- qnorm(1 - b_alpha/ 2)
