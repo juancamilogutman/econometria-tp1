@@ -151,6 +151,8 @@ df <- df %>%
 df$educf <- relevel(df$educf,"Secundario completo")
 df$est_civ <- relevel(df$est_civ,"Casado")
 df$region <- relevel(df$region,"GBA")
+df$edadi <- relevel(df$edadi,"De 25 a 29 años")
+
 
 ## Base del primer punto ####
 ### Filtramos segan la consigna del primer punto
@@ -244,7 +246,7 @@ tabla_full_time <- data.frame(
 rownames(tabla_full_time) <- "Trabajadores Jornada Completa"
 
 tabla_full_time
-tt(tabla_full_time)
+# tt(tabla_full_time)
 
 ### Generación de variable de formalidad que funciona pero mal ####
 df <- df %>%

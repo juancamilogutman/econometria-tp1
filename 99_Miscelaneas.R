@@ -1,7 +1,14 @@
-## Cuando queramos redefinir la categoría base:
-# 
-# CPS1985$gender <- relevel(CPS1985$gender,"female")
-# CPS1985$occupation <- relevel(CPS1985$occupation,"management")
+# format:
+#   pdf:
+#     toc: true
+#     toc-depth: 3
+#     toc-location: left
+#     number-sections: true
+#     mainfont: Latin Modern Roman
+#     sansfont: Latin Modern Roman
+#     include-in-header:
+#       text: |
+#         \usepackage{typearea}
 
 ##Para cambiar la orientación con latex (y un header)
 #

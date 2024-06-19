@@ -8,18 +8,11 @@ library(quantreg)        # Regresión por cuantiles
 
 eph1 <- readRDS("Bases/eph_1abc.RDS")
 
-reg_b <- lm(logSal ~ educn + edad + I(edad^2) + est_civ + region, data = eph1)
+reg_b <- lm(logSal ~ educf + edad + I(edad^2) + est_civ + region, data = eph1)
 b_coef_estim <- coef(reg_b)
 b_edad_max_salario <- (-1*b_coef_estim["edad"])/(2*b_coef_estim["I(edad^2)"])
 print (b_edad_max_salario)
 
-
-#Buscamos la varianza según el método delta
-##Definimos a la función g de los parametros de interés como (-1*b_coef_estim ["edad"])/(2*b_coef_estim["I(edad^2)"])
-print("$$ \beta $$")
-
-## _b[edad2] * 2 * edad + _b[edad] = 0
-## edad = -(_b[edad]) / 2 _b[edad2]
 
 b_dg_coef_edad <-(-1)/(2*b_coef_estim["I(edad^2)"])
 print(b_dg_coef_edad)
@@ -27,17 +20,14 @@ print(b_dg_coef_edad)
 b_dg_coef_edad2 <-(b_coef_estim ["edad"])/(2*((b_coef_estim["I(edad^2)"])^2))
 print(b_dg_coef_edad2)
 
-b_gradiente <- c(b_dg_coef_edad, b_dg_coef_edad2)
+b_gradiente <- c(0,0,0,0,0,0,0,b_dg_coef_edad, b_dg_coef_edad2,0,0,0,0,0,0,0,0,0)
 print(b_gradiente)
 
 b_vcov_mat <- vcov(reg_b)
-#view(b_vcov_mat)
-
-b_vcov_mat_edad <- b_vcov_mat [3:4,3:4]
-#view(b_vcov_mat_edad)
+view(b_vcov_mat)
 
 # Aplicar el método delta para obtener Varianza de g(beta1, beta2) aproximada por el método delta
-b_var_delta <- t(b_gradiente) %*% b_vcov_mat_edad %*% b_gradiente
+b_var_delta <- t(b_gradiente) %*% b_vcov_mat %*% b_gradiente
 print(b_var_delta)
 
 #Armamos el intervalo de confianza utilizando la distribución normal estándar
