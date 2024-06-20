@@ -15,6 +15,8 @@ options(tinytable_theme_placement_latex_float = "H")
 
 eph1 <- readRDS("Bases/eph_1abc.RDS")
 
+eph1 <- eph1 %>% filter(educf != "Sin instruccion") 
+
 # Ajustamos al mismo modelo del punto 1A una regresión por deciles.
 qreg <- rq(logSal ~ educf + edadi +  est_civ + region, tau = c(0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9), data = eph1)
 
@@ -27,7 +29,7 @@ View(tidy_qreg)
 coefs_educf <- tidy_qreg %>% filter(str_detect(term, "^educf"))
 
 ggplot(coefs_educf, aes(x = tau, y = estimate, ymin = conf.low, ymax = conf.high)) +
-  geom_ribbon(alpha = 0.2) +  # Añade una banda de intervalo de confianza
+  geom_ribbon(alpha = 0.05) +  # Añade una banda de intervalo de confianza
   geom_line() +               # Añade la línea de estimaciones
   facet_wrap(~term, scales = "free_y") +  # Crea un gráfico para cada variable
   theme_minimal() +           # Tema minimalista

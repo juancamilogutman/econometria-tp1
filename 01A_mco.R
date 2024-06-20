@@ -17,12 +17,34 @@ options(tinytable_theme_placement_latex_float = "H")
 eph1 <- readRDS("Bases/eph_1abc.RDS")
 
 #De la limpieza ya trajimos las variables categóricas como factores
-reg <- lm(logSal ~ educf + edadi +  est_civ + region, data = eph1)
+reg1 <- lm(logSal ~ educf + edadi +  est_civ + region, data = eph1)
+
+rdo_reg1 <- modelsummary(reg1,
+                         escape = TRUE,
+                         shape = term ~ model + statistic,
+                         cap = "1eras regresión",
+                         #width = 0.8,
+                         # estimate = "estimate",
+                         coef_rename = coef_rename,
+                         #coef_map = cm,
+                         estimate="{estimate}{stars}",
+                         statistic = c("p.value",
+                                       "conf.low",
+                                       "conf.high"
+                         ),
+                         stars = c('*' = .1,
+                                   '**' = .05,
+                                   '***'=0.01
+                         )
+                         #notes = notas2,
+                         #title = epigrafe2
+)
+
+rdo_clasica
 
 # La regresión para hacer el test "manualmente" es la siguiente:
-# reg_residuos <- lm(I(residuos^2) ~ educf + edadi + est_civ + region, data = eph1)
 # eph1$residuos <- residuals(reg)
-
+# reg_residuos <- lm(I(residuos^2) ~ educf + edadi + est_civ + region, data = eph1)
 
 # Corremos un test de Breusch-Pagan con la librería lmtest
 bp_reg <- bptest(reg)
@@ -48,16 +70,6 @@ rdo_clasica_y_robusta <- modelsummary(reg,
 )
 
 rdo_clasica_y_robusta
-
-# Contraste popr supuesto de homocedasticidad con Breusch-Pagan  
-# Gabriel dijo en el minuto 1:17:00 de la clase del tp que para
-# hacer un contraste de si se cumple homocedasticidad habría que
-# correr una regresión de los residuos al cuadrado contra las 
-# variables explicativas.
-
-
-
-# Ver el p valor del test F de esa regresión auxiliar.
 
 #PARA INFERENCIA ROBUSTA DE WHITE:
 #modelsummary(reg3,vcov = "robust")

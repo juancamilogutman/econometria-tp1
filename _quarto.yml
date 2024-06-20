@@ -3,13 +3,17 @@ project:
   output-dir: docs  
 
 format:
-  html:
+  pdf:
     toc: true
     toc-depth: 3
+    toc-location: left
     number-sections: true
-    # mainfont: Latin Modern Roman
-    # sansfont: Latin Modern Roman
-    
+    mainfont: Latin Modern Roman
+    sansfont: Latin Modern Roman
+    include-in-header:
+      text: |
+        \usepackage{typearea}
+
 bibliography: biblio.bib
 csl: apa7.csl
 lang: es

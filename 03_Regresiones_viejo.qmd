@@ -20,27 +20,15 @@ library(tinytable)    #Motor de creación de tablas
 ```
 
 ```{r}
-#PUNTO 1A
-
-# rm(list=ls()) #Limpiamos la memoria
-
-library(tidyverse)       # Para manejar bases de datos
-library(ggplot2)         # Para graficar
-library(modelsummary)    # Mejores tablas de regresión 
-library(tinytable)       # Motor de creación de tablas
-library(sandwich)        # Robust Covariance Matrix Estimators
-library(marginaleffects) # Método Delta implementación
-library(quantreg)        # Regresión por cuantiles
-library(lmtest)
+#| include: false
 
 options(tinytable_tt_digits = 3)
 options(tinytable_theme_placement_latex_float = "H")
+```
 
-eph1 <- readRDS("Bases/eph_1abc.RDS")
-
-#De la limpieza ya trajimos las variables categóricas como factores
-reg <- lm(logSal ~ educf + edadi +  est_civ + region, data = eph1)
-
+```{r}
+df1 <- readRDS("bases/eph_1abc.RDS")
+# df2 <- readRDS("Bases/eph_1de.RDS")
 ```
 
 Nos quedamos únicamente con los jefes de hogar, hombres, con edades entre 25 y 65 años, ocupados y asalariados. Habría que mencionar algo sobre la base resultante (y cuantos datos estamos descartando) y un mínimo análisis exploratorio.
@@ -52,6 +40,11 @@ Nos quedamos únicamente con los jefes de hogar, hombres, con edades entre 25 y 
 Cras a molestie nulla. [@Hemingway1952]
 
 Siguiendo a [@koenker2005], encontramos que:
+
+```{r}
+#| echo: true
+#| file: 01B_delta.R
+```
 
 [@pradier2023]
 
@@ -66,8 +59,14 @@ En la tabla pueden leerse los resultados de la primer regresión.
 #| echo: false
 
 reg1 <- lm(logSal ~ edad + educf + est_civ + region,
-           data = eph1
+           data = df1
            )
+reg2 <- lm(logSal ~ edad + educn + est_civ + region,
+           data = df1
+           )
+regs <- list("Sin edad^2" = reg1,
+             "Con edad^2" = reg2
+             )
 
 #coefmap
 cm1y2 <- c("(Intercept)"="Constante",
@@ -126,7 +125,7 @@ notas2 <- c("Notas: Acá comentarios, explicaciones, etc.",
 
 epigrafe2 <- 'Tabla 2 — Resultados de la regresión, Ecuación de Mincer
 (estimación del efecto de la educación en el logaritmo de los salarios, controlando por...)'
-rdo_reg1 <- modelsummary(reg1,
+rdo_reg2 <- modelsummary(reg2,
                            escape = TRUE,
                            shape = term ~ model + statistic,
                            cap = "1eras regresión",
@@ -146,7 +145,7 @@ rdo_reg1 <- modelsummary(reg1,
                            notes = notas2,
                            title = epigrafe2
                            )
-rdo_reg1 %>%
+rdo_reg2 %>%
   theme_tt("multipage",
            rowhead = 1
            ) %>%
@@ -159,13 +158,13 @@ rdo_reg1 %>%
 ```
 
 ```{r}
-gof2 <- get_gof(reg1)
+gof2 <- get_gof(reg2)
 gof2 <- as.data.frame(t(gof2), optional = TRUE)
 gof2$estad <- rownames(gof2)
 gof2 <- gof2 %>% select(estad, everything())
 names(gof2) <- NULL
 
-gof1 <- get_gof(reg1)
+gof1 <- get_gof(reg2)
 gof1 <- as.data.frame(t(gof1), optional = TRUE)
 gof1$estad <- rownames(gof1)
 gof1 <- gof1 %>% select(estad, everything())
@@ -195,3 +194,20 @@ gm1[16:19,]
 gof1 <- get_gof(reg1, gof_map = gm1)
 gof1 %>% tt()
 ```
+
+```{r}
+# Anova(reg2) %>% tt()
+```
+
+\input
+
+testlineal.tex
+
+```{=tex}
+\newpage
+\KOMAoptions{paper=portrait,pagesize}
+\recalctypearea
+```
+texto de prueba
+
+# Bibliografía
