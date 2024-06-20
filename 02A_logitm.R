@@ -7,6 +7,7 @@ library(sandwich)        # Robust Covariance Matrix Estimators
 library(quantreg)        # Regresión por cuantiles
 library(nnet)
 library(broom)
+library(stargazer)
 
 eph1 <- readRDS("Bases/eph_2ab.RDS")
 
@@ -18,3 +19,6 @@ model_summary <- summary(logit_m)
 coef <- as.data.frame(model_summary$coefficients)
 model_summary$standard.errors
 
+coef
+
+stargazer(logit_m, type = "text")

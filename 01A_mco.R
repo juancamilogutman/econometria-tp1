@@ -4,8 +4,6 @@
 
 library(tidyverse)       # Para manejar bases de datos
 library(ggplot2)         # Para graficar
-library(modelsummary)    # Mejores tablas de regresión 
-library(tinytable)       # Motor de creación de tablas
 library(sandwich)        # Robust Covariance Matrix Estimators
 library(marginaleffects) # Método Delta implementación
 library(quantreg)        # Regresión por cuantiles
@@ -19,10 +17,26 @@ eph1 <- readRDS("Bases/eph_1abc.RDS")
 #De la limpieza ya trajimos las variables categóricas como factores
 reg1 <- lm(logSal ~ educf + edadi +  est_civ + region, data = eph1)
 
-rdo_reg1 <- modelsummary(reg1,
+stargazer(reg1, type = "text",
+          omit.stat = c("LL", "ser"),
+          single.row = TRUE,
+          header = FALSE)
+
+robust_cov <- vcovHC(reg1, type = "HC1")
+
+stargazer(reg1, reg1, type = "text",
+          se = list(NULL, sqrt(diag(robust_cov))),
+          title = "Comparación del modelo con Desvíos Estándar Clásicos y Robustos de White",
+          model.names = TRUE,
+          model.numbers = TRUE,
+          omit.stat = c("LL", "ser"),
+          single.row = TRUE,
+          header = FALSE)
+
+msumreg_clasica <- modelsummary(reg1,
                          escape = TRUE,
                          shape = term ~ model + statistic,
-                         cap = "1eras regresión",
+                         cap = "Regresión con Desvíos Clásicos",
                          #width = 0.8,
                          # estimate = "estimate",
                          coef_rename = coef_rename,
@@ -36,11 +50,27 @@ rdo_reg1 <- modelsummary(reg1,
                                    '**' = .05,
                                    '***'=0.01
                          )
-                         #notes = notas2,
-                         #title = epigrafe2
 )
 
-rdo_clasica
+msumreg_robusta <- modelsummary(reg1,
+                                escape = TRUE,
+                                vcov = robust_cov,
+                                shape = term ~ model + statistic,
+                                cap = "Regresión con Desvíos Clásicos",
+                                #width = 0.8,
+                                # estimate = "estimate",
+                                coef_rename = coef_rename,
+                                #coef_map = cm,
+                                estimate="{estimate}{stars}",
+                                statistic = c("p.value",
+                                              "conf.low",
+                                              "conf.high"
+                                ),
+                                stars = c('*' = .1,
+                                          '**' = .05,
+                                          '***'=0.01
+                                )
+)
 
 # La regresión para hacer el test "manualmente" es la siguiente:
 # eph1$residuos <- residuals(reg)
@@ -56,25 +86,6 @@ ct_reg <- bptest(reg, ~ educf + edadi + est_civ + region, data = eph1, studentiz
 # Mostramos los resultados de la prueba de Cameron & Trivedi
 print(ct_reg)
 
-rdo_clasica_y_robusta <- modelsummary(reg,
-                         escape = TRUE,
-                         shape = term ~ model + statistic,
-                         #cap = "1er regresión",
-                         estimate="{estimate}{stars}",
-                         statistic = c("p.value", "conf.low", "conf.high"),
-                         stars = c('*' = .1,
-                                   '**' = .05,
-                                   '***'=0.01
-                         ),
-                         vcov = c("classical", "robust") #Compara errores estándar robustos y no robustos
-)
-
-rdo_clasica_y_robusta
-
-#PARA INFERENCIA ROBUSTA DE WHITE:
-#modelsummary(reg3,vcov = "robust")
-#incluso, capaz se pueden comparar con:
-# vcov = c("classical", "robust")
 
 ##Calcular matriz de covarianza robusta (corrección de heterocedasticidad) Las
 ##opciones comunes son "HC0", "HC1", "HC2", "HC3", etc. Estas opciones difieren
